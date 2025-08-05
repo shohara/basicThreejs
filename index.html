@@ -115,6 +115,9 @@
                 side: THREE.BackSide // 球体の内側から見るため
             });
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            
+            // 左右反転を修正するためにX軸を反転
+            sphere.scale.x = -1;
 
             // ワイヤフレームを作成
             const edges = new THREE.EdgesGeometry(sphereGeometry);
