@@ -134,7 +134,7 @@
         // Create a sphere with 360 image texture
         var sphereWireframe;
         var drawSphereObject = (position, radius, customTexture = null) => {
-            const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
+            const sphereGeometry = new THREE.SphereGeometry(radius, 36*2, 18*2);
             
             // テクスチャを読み込み（カスタムテクスチャが指定されていない場合はデフォルトを使用）
             let texture;
