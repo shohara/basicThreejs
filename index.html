@@ -67,7 +67,34 @@
             fov: fov, // [degree]
             zoom: zoom, // [magnicification]
             showWireframe: true, // ワイヤフレーム表示/非表示
-            showAxis: true // 軸表示/非表示
+            showAxis: true, // 軸表示/非表示
+            loadImage: function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.jpg,.jpeg,.png,.webp,.bmp,.tiff,.tga';
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const textureLoader = new THREE.TextureLoader();
+                            textureLoader.load(event.target.result, function(texture) {
+                                // 既存の球体オブジェクトを削除
+                                scene.remove(window.sphereObject);
+                                
+                                // 新しいテクスチャで球体を作成
+                                const newSphereObject = drawSphereObject(new THREE.Vector3(0, 0, 0), 2, texture);
+                                scene.add(newSphereObject);
+                                
+                                // グローバル変数を更新
+                                window.sphereObject = newSphereObject;
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
         }
         gui.add(param, 'fov', 1, 179).onChange(function(value) {
             fov = value
@@ -89,6 +116,9 @@
                 axes.visible = value;
             }
         });
+        
+        // 画像読み込みボタンを追加
+        gui.add(param, 'loadImage').name('Load Image...');
 
         // Utility functions
         var fov_horizontal = (f) => {
@@ -103,12 +133,17 @@
 
         // Create a sphere with 360 image texture
         var sphereWireframe;
-        var drawSphereObject = (position, radius) => {
+        var drawSphereObject = (position, radius, customTexture = null) => {
             const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
             
-            // 360画像のテクスチャを読み込み
-            const textureLoader = new THREE.TextureLoader();
-            const texture = textureLoader.load('360photo.jpg');
+            // テクスチャを読み込み（カスタムテクスチャが指定されていない場合はデフォルトを使用）
+            let texture;
+            if (customTexture) {
+                texture = customTexture;
+            } else {
+                const textureLoader = new THREE.TextureLoader();
+                texture = textureLoader.load('360photo.jpg');
+            }
             
             const sphereMaterial = new THREE.MeshBasicMaterial({ 
                 map: texture,
@@ -216,6 +251,7 @@
         // Put a sphere in the scene
         const sphereObject = drawSphereObject(new THREE.Vector3(0, 0, 0), 2);
         scene.add(sphereObject);
+        window.sphereObject = sphereObject; // グローバル変数として保存
 
         // Put a subjective camera in the scene
         var subjectiveCamera = drawCamera(new THREE.Vector3(0,0,1), new THREE.Vector2(0,0,0), param.fov);
